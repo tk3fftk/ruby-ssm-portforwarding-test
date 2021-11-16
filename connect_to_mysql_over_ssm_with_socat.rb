@@ -1,11 +1,10 @@
 # frozen_string_literal: true
 
 require "aws-sdk"
-require "aws_config"
 
 role_credentials = Aws::AssumeRoleCredentials.new(
   role_arn: ENV["AWS_ROLE_ARN"],
-  role_session_name: "sesseion-from-ruby"
+  role_session_name: "session-from-ruby"
 )
 
 client = Aws::SSM::Client.new(
