@@ -2,6 +2,9 @@
 
 require "aws-sdk"
 require "mysql2"
+require "json"
+
+ssm_endpoint = "https://ssm.ap-northeast-1.amazonaws.com"
 
 role_credentials = Aws::AssumeRoleCredentials.new(
   role_arn: ENV["AWS_ROLE_ARN"],
@@ -15,7 +18,7 @@ client = Aws::SSM::Client.new(
   credentials: role_credentials
 )
 
-res = client.start_session({
+start_session_response = client.start_session({
   target: ENV["INSTANCE_ID"],
   document_name: "AWS-StartPortForwardingSession",
   reason: "test",
@@ -25,10 +28,14 @@ res = client.start_session({
   }
 })
 
-puts res
-session_id = res["session_id"]
-token = res["token_value"]
-stream_url = res["stream_url"]
+puts start_session_response
+session = {
+  SessionId: start_session_response["session_id"],
+  TokenValue: start_session_response["token_value"],
+  StreamUrl: start_session_response["stream_url"],
+}
+
+puts session
 
 res = client.get_connection_status({
   target: ENV["INSTANCE_ID"],
@@ -48,7 +55,7 @@ while status != "Connected" && count < max_attempt
     filters: [
       {
         key: "SessionId", # required, accepts InvokedAfter, InvokedBefore, Target, Owner, Status, SessionId
-        value: session_id, # required
+        value: session[:SessionId], # required
       },
     ],
   })
@@ -57,6 +64,28 @@ while status != "Connected" && count < max_attempt
   sleep(0.5)
   puts(res)
 end
+
+plugin_parametes = {
+  Target: ENV["INSTANCE_ID"],
+  DocumentName: "AWS-StartPortForwardingSession",
+  Parameters: {
+    portNumber: ["3306"],
+    localPortNumber: ["13306"],
+  }
+}
+
+# run session-manager-plugin
+cmd = "session-manager-plugin '#{session.to_json}' 'ap-northeast-1' 'StartSession' 'session-from-ruby' '#{plugin_parametes.to_json}' '#{ssm_endpoint}'"
+puts cmd
+pid = spawn(
+  cmd
+)
+Signal.trap(0, proc {
+  puts "Terminating: #{$$}, send SIGTERM to #{pid}"
+  Process.kill("TERM", pid)
+})
+
+sleep(1)
 
 mysql_client = Mysql2::Client.new(
   host: "127.0.0.1",
