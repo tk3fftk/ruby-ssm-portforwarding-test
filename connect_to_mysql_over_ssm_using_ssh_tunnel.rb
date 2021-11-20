@@ -12,7 +12,7 @@ db_host = ENV["DB_HOST"]
 key_path = ENV["KEY_PATH"] || "~/.ssh/id_rsa.pub"
 ssh_options = {
   keys: [key_path],
-  proxy: Net::SSH::Proxy::Command.new("aws ssm start-session --target %h --document-name AWS-StartSSHSession --parameters 'portNumber=%p' --profile pn-playground")
+  proxy: Net::SSH::Proxy::Command.new("aws ssm start-session --target %h --document-name AWS-StartSSHSession --parameters 'portNumber=%p'")
 }
 
 gateway = Net::SSH::Gateway.new(step_host, step_user, ssh_options)
