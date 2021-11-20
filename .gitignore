@@ -56,4 +56,5 @@ build-iPhoneSimulator/
 # .rubocop-https?--*
 
 run.sh
+run_docker.sh
 log

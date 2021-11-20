@@ -7,6 +7,8 @@ git_source(:github) { |repo_name| "https://github.com/#{repo_name}" }
 gem "aws_config"
 gem "aws-sdk", "~> 3"
 gem "mysql2"
+gem "net-ssh"
+gem "net-ssh-gateway"
 
 group :rubocop do
   gem "rubocop", ">= 0.90", require: false
