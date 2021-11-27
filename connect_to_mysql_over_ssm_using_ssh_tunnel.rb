@@ -9,6 +9,7 @@ require "net/ssh/proxy/command"
 # write aws config file
 profile = ENV["AWS_PROFILE"] || "default"
 
+=begin
 aws_config_file = File.expand_path("~/.aws/config")
 unless File.exist?(aws_config_file) then
   File.open(aws_config_file, "w") do |f|
@@ -37,6 +38,7 @@ source_profile = default
     EOS
   end
 end
+=end
 
 step_user = "ec2-user"
 step_host = ENV["INSTANCE_ID"]
@@ -44,13 +46,13 @@ db_host = ENV["DB_HOST"]
 key_path = ENV["KEY_PATH"] || "~/.ssh/id_rsa.pub"
 ssh_options = {
   keys: [key_path],
-  # with personal config/credentials
-  # proxy: Net::SSH::Proxy::Command.new("aws ssm start-session --target %h --document-name AWS-StartSSHSession --parameters 'portNumber=%p' --profile pn-playground"),
   # with dynamic config/credentials
-  proxy: Net::SSH::Proxy::Command.new("aws ssm start-session --target %h --document-name AWS-StartSSHSession --parameters 'portNumber=%p' --profile #{ENV["AWS_PROFILE"]}"),
+  # proxy: Net::SSH::Proxy::Command.new("aws ssm start-session --target %h --document-name AWS-StartSSHSession --parameters 'portNumber=%p' --profile #{ENV["AWS_PROFILE"]}"),
+  # without profile
+  proxy: Net::SSH::Proxy::Command.new("aws ssm start-session --target %h --document-name AWS-StartSSHSession --parameters 'portNumber=%p'"),
   # with ruby proxy command (not working)
   # proxy: Net::SSH::Proxy::Command.new("ruby /home/tk3fftk/git/ruby-ssm-portforwarding-test/ruby-ssm-startssh-test.rb -h '%h' -p '%p'"),
-  verbose: :info,
+  # verbose: :info,
 }
 
 gateway = Net::SSH::Gateway.new(step_host, step_user, ssh_options)
@@ -67,7 +69,7 @@ gateway.open(db_host, 3306) do |forwared_port|
     database: ENV["MYSQL_DATABASE"]
   )
 
-  results = mysql_client.query("SELECT * FROM user")
+  results = mysql_client.query("SHOW DATABASES")
 
   results.each do |row|
     puts row

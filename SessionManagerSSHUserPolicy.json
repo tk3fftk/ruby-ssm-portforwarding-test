@@ -1,0 +1,39 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+      {
+          "Sid": "VisualEditor0",
+          "Effect": "Allow",
+          "Action": [
+              "ssm:GetConnectionStatus",
+              "ec2:DescribeInstances",
+              "ssm:DescribeSessions",
+              "ssm:DescribeInstanceProperties"
+          ],
+          "Resource": "*"
+      },
+      {
+          "Sid": "VisualEditor1",
+          "Effect": "Allow",
+          "Action": "ssm:StartSession",
+          "Resource": [
+              "arn:aws:ec2:ap-northeast-1:<account>:instance/<instance-id>",
+              "arn:aws:ssm:*:*:document/AWS-StartSSHSession"
+          ],
+          "Condition": {
+              "BoolIfExists": {
+                  "ssm:SessionDocumentAccessCheck": "true"
+              }
+          }
+      },
+      {
+          "Sid": "VisualEditor2",
+          "Effect": "Allow",
+          "Action": [
+              "ssm:ResumeSession",
+              "ssm:TerminateSession"
+          ],
+          "Resource": "arn:aws:ssm:*:*:session/${aws:username}-*"
+      }
+  ]
+}
