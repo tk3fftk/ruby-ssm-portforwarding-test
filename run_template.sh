@@ -9,5 +9,6 @@ export AWS_REGION="ap-northeast-1"
 export MYSQL_USERNAME='user'
 export MYSQL_PASSWORD='password'
 export MYSQL_DATABASE='database'
+export NO_ENV='true'
 
 ruby connect_to_mysql_over_ssm_using_ssh_tunnel.rb

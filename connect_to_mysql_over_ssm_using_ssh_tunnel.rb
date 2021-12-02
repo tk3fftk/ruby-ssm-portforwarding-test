@@ -49,11 +49,19 @@ ssh_options = {
   # with dynamic config/credentials
   # proxy: Net::SSH::Proxy::Command.new("aws ssm start-session --target %h --document-name AWS-StartSSHSession --parameters 'portNumber=%p' --profile #{ENV["AWS_PROFILE"]}"),
   # without profile
-  proxy: Net::SSH::Proxy::Command.new("aws ssm start-session --target %h --document-name AWS-StartSSHSession --parameters 'portNumber=%p'"),
+  # proxy: Net::SSH::Proxy::Command.new("aws ssm start-session --target %h --document-name AWS-StartSSHSession --parameters 'portNumber=%p'"),
+  # without profile, no envvers
+  proxy: Net::SSH::Proxy::Command.new("AWS_ACCESS_KEY_ID=#{ENV["AWS_ACCESS_KEY_ID"]} AWS_SECRET_ACCESS_KEY=#{ENV["AWS_SECRET_ACCESS_KEY"]} AWS_REGION=#{ENV["AWS_REGION"]} aws ssm start-session --target %h --document-name AWS-StartSSHSession --parameters 'portNumber=%p'"),
   # with ruby proxy command (not working)
   # proxy: Net::SSH::Proxy::Command.new("ruby /home/tk3fftk/git/ruby-ssm-portforwarding-test/ruby-ssm-startssh-test.rb -h '%h' -p '%p'"),
   # verbose: :info,
 }
+
+if ENV["NO_ENV"] == "true" then
+  ENV["AWS_ACCESS_KEY_ID"] = nil
+  ENV["AWS_SECRET_ACCESS_KEY"] = nil
+  ENV["AWS_REGION"] = nil
+end
 
 gateway = Net::SSH::Gateway.new(step_host, step_user, ssh_options)
 
